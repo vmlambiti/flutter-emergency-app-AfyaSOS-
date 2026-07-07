@@ -15,20 +15,35 @@ void main() async {
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  static _MyAppState? of(BuildContext context) {
-    return context.findAncestorStateOfType<_MyAppState>();
+  static AppController? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_MyAppScope>()?.state ??
+        context.findAncestorStateOfType<_MyAppState>();
   }
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+abstract class AppController {
+  ThemeMode get themeMode;
+  String get languageCode;
+  AppStrings get strings;
+
+  Future<void> changeTheme(ThemeMode mode);
+  Future<void> changeLanguage(String languageCode);
+}
+
+class _MyAppState extends State<MyApp> implements AppController {
   ThemeMode _themeMode = ThemeMode.system;
   String _languageCode = 'en';
 
+  @override
   ThemeMode get themeMode => _themeMode;
+
+  @override
   String get languageCode => _languageCode;
+
+  @override
   AppStrings get strings => AppStrings.of(_languageCode);
 
   @override
@@ -55,6 +70,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  @override
   Future<void> changeTheme(ThemeMode mode) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -85,6 +101,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  @override
   Future<void> changeLanguage(String languageCode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('app_language', languageCode);
@@ -98,36 +115,60 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
+    return _MyAppScope(
+      state: this,
+      languageCode: _languageCode,
       themeMode: _themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF9FAFB),
-        primaryColor: const Color(0xFF1E3A8A),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        themeMode: _themeMode,
+        theme: ThemeData(
           brightness: Brightness.light,
+          scaffoldBackgroundColor: const Color(0xFFF9FAFB),
+          primaryColor: const Color(0xFF1E3A8A),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF1E3A8A),
+            brightness: Brightness.light,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFFF9FAFB),
+            elevation: 0,
+          ),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFF9FAFB),
-          elevation: 0,
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-        primaryColor: const Color(0xFF1E3A8A),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A),
+        darkTheme: ThemeData(
           brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFF0F172A),
+          primaryColor: const Color(0xFF1E3A8A),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF1E3A8A),
+            brightness: Brightness.dark,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFF0F172A),
+            elevation: 0,
+          ),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0F172A),
-          elevation: 0,
-        ),
+        home: const WelcomeScreen(),
       ),
-      home: const WelcomeScreen(),
     );
+  }
+}
+
+class _MyAppScope extends InheritedWidget {
+  const _MyAppScope({
+    required this.state,
+    required this.languageCode,
+    required this.themeMode,
+    required super.child,
+  });
+
+  final AppController state;
+  final String languageCode;
+  final ThemeMode themeMode;
+
+  @override
+  bool updateShouldNotify(_MyAppScope oldWidget) {
+    return languageCode != oldWidget.languageCode ||
+        themeMode != oldWidget.themeMode;
   }
 }
