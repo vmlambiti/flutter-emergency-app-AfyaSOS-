@@ -131,7 +131,7 @@ class MainActivity : FlutterActivity() {
         ).fold(0) { acc, value -> acc or value }
 
         val notification = builder
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(Notification.BigTextStyle().bigText(body))

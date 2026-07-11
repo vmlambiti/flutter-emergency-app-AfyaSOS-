@@ -12,29 +12,49 @@ class FirstAidScreen extends StatefulWidget {
 class _FirstAidScreenState extends State<FirstAidScreen> {
   Map<dynamic, dynamic>? firstAidData;
   bool isLoading = true;
+  bool _hasLoadedFirstAidData = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_hasLoadedFirstAidData) {
+      return;
+    }
+
+    _hasLoadedFirstAidData = true;
     loadFirstAidData();
   }
 
   Future<void> loadFirstAidData() async {
     final strings = MyApp.of(context)!.strings;
 
-    await FirstAidService.saveDefaultFirstAidDataIfNeeded(
-      strings.languageCodeValue,
-    );
-    await FirstAidService.refreshDefaultFirstAidData(strings.languageCodeValue);
+    try {
+      debugPrint(
+        'FirstAidScreen: loading first aid data for ${strings.languageCodeValue}',
+      );
+      final data = await FirstAidService.getOrInitializeFirstAidData(
+        strings.languageCodeValue,
+      );
 
-    final data = await FirstAidService.getFirstAidData();
+      if (!mounted) return;
 
-    if (!mounted) return;
+      setState(() {
+        firstAidData = data;
+        isLoading = false;
+      });
+      debugPrint('FirstAidScreen: first aid data loading completed');
+    } catch (error, stackTrace) {
+      debugPrint('FirstAidScreen: failed to load first aid data: $error');
+      debugPrintStack(stackTrace: stackTrace);
 
-    setState(() {
-      firstAidData = data;
-      isLoading = false;
-    });
+      if (!mounted) return;
+
+      setState(() {
+        firstAidData = null;
+        isLoading = false;
+      });
+    }
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 class FirstAidService {
@@ -5,7 +6,16 @@ class FirstAidService {
   static const String dataKey = 'hypertension_first_aid';
 
   static Future<Box> _openBox() async {
-    return await Hive.openBox(boxName);
+    debugPrint('FirstAidService: opening Hive box "$boxName"');
+
+    final box = Hive.isBoxOpen(boxName)
+        ? Hive.box(boxName)
+        : await Hive.openBox(boxName);
+
+    debugPrint(
+      'FirstAidService: Hive box "$boxName" opened with ${box.length} record(s)',
+    );
+    return box;
   }
 
   static Future<void> saveDefaultFirstAidDataIfNeeded(
@@ -14,21 +24,32 @@ class FirstAidService {
     final box = await _openBox();
 
     if (box.containsKey(dataKey)) {
+      debugPrint(
+        'FirstAidService: first aid data already exists for key "$dataKey"',
+      );
       return;
     }
 
+    debugPrint(
+      'FirstAidService: no first aid data found; inserting defaults for "$languageCode"',
+    );
     final Map<String, dynamic> firstAidData = _buildDefaultFirstAidData(
       languageCode,
     );
     await box.put(dataKey, firstAidData);
+    debugPrint('FirstAidService: default first aid data inserted');
   }
 
   static Future<void> refreshDefaultFirstAidData(String languageCode) async {
     final box = await _openBox();
+    debugPrint(
+      'FirstAidService: refreshing default first aid data for "$languageCode"',
+    );
     final Map<String, dynamic> firstAidData = _buildDefaultFirstAidData(
       languageCode,
     );
     await box.put(dataKey, firstAidData);
+    debugPrint('FirstAidService: default first aid data refreshed');
   }
 
   static Map<String, dynamic> _buildDefaultFirstAidData(String languageCode) {
@@ -111,13 +132,64 @@ class FirstAidService {
 
   static Future<Map<dynamic, dynamic>?> getFirstAidData() async {
     final box = await _openBox();
+    debugPrint('FirstAidService: loading first aid data from "$dataKey"');
     final data = box.get(dataKey);
 
     if (data is Map) {
+      debugPrint('FirstAidService: first aid data loaded successfully');
       return Map<dynamic, dynamic>.from(data);
     }
 
+    debugPrint('FirstAidService: no valid first aid data found');
     return null;
+  }
+
+  static Future<Map<dynamic, dynamic>?> getOrInitializeFirstAidData(
+    String languageCode,
+  ) async {
+    try {
+      final box = await _openBox();
+
+      if (!box.containsKey(dataKey)) {
+        debugPrint(
+          'FirstAidService: first aid box is missing "$dataKey"; initializing defaults',
+        );
+        final Map<String, dynamic> firstAidData = _buildDefaultFirstAidData(
+          languageCode,
+        );
+        await box.put(dataKey, firstAidData);
+        debugPrint(
+          'FirstAidService: default first aid data initialized and ready to load',
+        );
+      } else {
+        debugPrint(
+          'FirstAidService: existing first aid data found for "$dataKey"',
+        );
+      }
+
+      final data = box.get(dataKey);
+
+      if (data is Map) {
+        debugPrint('FirstAidService: returning first aid data');
+        return Map<dynamic, dynamic>.from(data);
+      }
+
+      debugPrint(
+        'FirstAidService: data at "$dataKey" is invalid; replacing with defaults',
+      );
+      final Map<String, dynamic> firstAidData = _buildDefaultFirstAidData(
+        languageCode,
+      );
+      await box.put(dataKey, firstAidData);
+      debugPrint(
+        'FirstAidService: replacement default first aid data initialized',
+      );
+      return Map<dynamic, dynamic>.from(firstAidData);
+    } catch (error, stackTrace) {
+      debugPrint('FirstAidService: error loading first aid data: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      rethrow;
+    }
   }
 
   static Future<void> clearFirstAidData() async {
