@@ -12,32 +12,32 @@ class FirstAidScreen extends StatefulWidget {
 class _FirstAidScreenState extends State<FirstAidScreen> {
   Map<dynamic, dynamic>? firstAidData;
   bool isLoading = true;
-  bool _hasLoadedFirstAidData = false;
+  String? _loadedLanguageCode;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (_hasLoadedFirstAidData) {
+    final languageCode = MyApp.of(context)!.languageCode;
+    if (_loadedLanguageCode == languageCode) {
       return;
     }
 
-    _hasLoadedFirstAidData = true;
-    loadFirstAidData();
+    _loadedLanguageCode = languageCode;
+    isLoading = true;
+    loadFirstAidData(languageCode);
   }
 
-  Future<void> loadFirstAidData() async {
-    final strings = MyApp.of(context)!.strings;
-
+  Future<void> loadFirstAidData(String languageCode) async {
     try {
       debugPrint(
-        'FirstAidScreen: loading first aid data for ${strings.languageCodeValue}',
+        'FirstAidScreen: loading first aid data for $languageCode',
       );
       final data = await FirstAidService.getOrInitializeFirstAidData(
-        strings.languageCodeValue,
+        languageCode,
       );
 
-      if (!mounted) return;
+      if (!mounted || _loadedLanguageCode != languageCode) return;
 
       setState(() {
         firstAidData = data;
@@ -48,7 +48,7 @@ class _FirstAidScreenState extends State<FirstAidScreen> {
       debugPrint('FirstAidScreen: failed to load first aid data: $error');
       debugPrintStack(stackTrace: stackTrace);
 
-      if (!mounted) return;
+      if (!mounted || _loadedLanguageCode != languageCode) return;
 
       setState(() {
         firstAidData = null;
