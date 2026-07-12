@@ -436,11 +436,28 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(strings.healthProfile),
-                Text(strings.liveMonitoring),
-                Text(strings.recentReadings),
+                Expanded(
+                  child: Text(
+                    strings.healthProfile,
+                    textAlign: TextAlign.start,
+                    softWrap: true,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    strings.liveMonitoring,
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    strings.recentReadings,
+                    textAlign: TextAlign.end,
+                    softWrap: true,
+                  ),
+                ),
               ],
             ),
           ),
