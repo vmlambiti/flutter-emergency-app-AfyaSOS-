@@ -9,6 +9,13 @@ import 'main.dart';
 import 'notification_service.dart';
 
 Future<void> triggerSOS(BuildContext context) async {
+  final Stopwatch sosTimer = Stopwatch()..start();
+  debugPrint('SOS timing: button pressed (0 ms)');
+
+  void logTiming(String stage) {
+    debugPrint('SOS timing: $stage (${sosTimer.elapsedMilliseconds} ms)');
+  }
+
   final strings = MyApp.of(context)!.strings;
   final notifications = NotificationService.instance;
 
@@ -22,6 +29,7 @@ Future<void> triggerSOS(BuildContext context) async {
   try {
     final box = await Hive.openBox('userBox');
     final savedContacts = box.get('emergency_contacts');
+    logTiming('contacts loaded');
 
     if (savedContacts == null ||
         savedContacts is! List ||
@@ -58,10 +66,14 @@ Future<void> triggerSOS(BuildContext context) async {
       return;
     }
 
-    await notifications.showEmergencyStarted();
+    // This notification does not depend on location, so let it complete while
+    // the location checks and GPS acquisition are running.
+    final Future<void> emergencyStartedNotification =
+        notifications.showEmergencyStarted();
 
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      await emergencyStartedNotification;
       await notifications.showLocationSharingFailed(
         strings.turnOnLocationServices,
       );
@@ -76,6 +88,7 @@ Future<void> triggerSOS(BuildContext context) async {
     }
 
     if (permission == LocationPermission.denied) {
+      await emergencyStartedNotification;
       await notifications.showLocationSharingFailed(
         strings.locationPermissionDenied,
       );
@@ -84,6 +97,7 @@ Future<void> triggerSOS(BuildContext context) async {
     }
 
     if (permission == LocationPermission.deniedForever) {
+      await emergencyStartedNotification;
       await notifications.showLocationSharingFailed(
         strings.locationPermissionDeniedForever,
       );
@@ -98,12 +112,17 @@ Future<void> triggerSOS(BuildContext context) async {
         desiredAccuracy: LocationAccuracy.high,
       );
     } catch (e) {
+      await emergencyStartedNotification;
       await notifications.showLocationSharingFailed(e.toString());
       rethrow;
     }
 
     final double latitude = position.latitude;
     final double longitude = position.longitude;
+    logTiming('GPS location acquired');
+
+    final Telephony telephony = Telephony.instance;
+    final Future<bool?> smsPermissionRequest = telephony.requestSmsPermissions;
 
     String placeText = strings.addressNotAvailable;
 
@@ -131,37 +150,61 @@ Future<void> triggerSOS(BuildContext context) async {
     } catch (_) {
       placeText = strings.addressNotAvailable;
     }
+    logTiming('address resolved');
 
     final String mapLink = "https://maps.google.com/?q=$latitude,$longitude";
 
-    final String emergencyMessage =
-        '''
-${strings.emergencyMessageLine1}
-${strings.myLocationLabel}: $placeText
-${strings.coordinatesLabel}: $latitude, $longitude
-Map: $mapLink
-''';
+    final String emergencyMessage = '''🚨 EMERGENCY ALERT / TAHADHARI YA DHARURA
 
-    final Telephony telephony = Telephony.instance;
-    final bool? smsPermissionGranted = await telephony.requestSmsPermissions;
+ENGLISH
+I need urgent medical assistance.
+My current location is:
+$placeText
+
+Coordinates:
+$latitude, $longitude
+
+Map:
+$mapLink
+
+SWAHILI
+Nahitaji msaada wa haraka wa matibabu.
+Eneo nilipo ni:
+$placeText
+
+Kuratibu:
+$latitude, $longitude
+
+Ramani:
+$mapLink
+
+Sent via AfyaSOS''';
+
+    await emergencyStartedNotification;
+    final bool? smsPermissionGranted = await smsPermissionRequest;
 
     if (smsPermissionGranted != true) {
       showMessage(strings.smsPermissionDenied);
       return;
     }
 
-    for (final phone in allPhones) {
-      await telephony.sendSms(
-        to: phone,
-        message: emergencyMessage,
-        isMultipart: true,
-      );
-    }
+    await Future.wait(
+      allPhones.map(
+        (phone) => telephony.sendSms(
+          to: phone,
+          message: emergencyMessage,
+          isMultipart: true,
+        ),
+      ),
+    );
+    logTiming('SMS sent');
 
     await notifications.showLocationShared();
 
     if (mainContactPhone.isNotEmpty) {
-      await FlutterPhoneDirectCaller.callNumber(mainContactPhone);
+      final call = FlutterPhoneDirectCaller.callNumber(mainContactPhone);
+      logTiming('phone call initiated');
+      await call;
     }
 
     debugPrint("Main Contact Name: $mainContactName");
@@ -176,5 +219,8 @@ Map: $mapLink
     await notifications.showEmergencyCompleted();
   } catch (e) {
     showMessage('${strings.sosError}: $e');
+  } finally {
+    logTiming('total execution time');
+    sosTimer.stop();
   }
 }
