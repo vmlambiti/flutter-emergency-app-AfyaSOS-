@@ -146,6 +146,20 @@ class AppStrings {
       'heightOptional': 'Height in cm (Optional)',
       'weightOptional': 'Weight in kg (Optional)',
       'bloodGroupOptional': 'Blood Group (Optional)',
+      'fullNameValidationRequired': 'Full Name is required',
+      'fullNameValidationLength': 'Full Name must be at least 2 characters',
+      'fullNameValidationCharacters':
+          "Use letters, spaces, apostrophes, and hyphens only",
+      'birthDateValidationRequired': 'Birth Date is required',
+      'genderValidationRequired': 'Gender is required',
+      'phoneValidationRequired': 'Phone Number is required',
+      'phoneValidationInvalid': 'Enter a valid Tanzanian phone number',
+      'emailValidationInvalid': 'Enter a valid email address',
+      'heightValidationInvalid': 'Height must be a number',
+      'heightValidationRange': 'Height must be between 50 and 250 cm',
+      'weightValidationInvalid': 'Weight must be a number',
+      'weightValidationRange': 'Weight must be between 10 and 300 kg',
+      'bloodGroupValidationInvalid': 'Select a valid blood group',
       'doctorOptional': 'Doctor Name (Optional)',
       'hospitalOptional': 'Preferred Hospital / Clinic (Optional)',
       'healthNotes': 'Health Notes / First Aid Notes',
@@ -421,6 +435,20 @@ class AppStrings {
       'heightOptional': 'Urefu kwa cm (Hiari)',
       'weightOptional': 'Uzito kwa kg (Hiari)',
       'bloodGroupOptional': 'Kundi la Damu (Hiari)',
+      'fullNameValidationRequired': 'Jina Kamili linahitajika',
+      'fullNameValidationLength': 'Jina Kamili lazima liwe na angalau herufi 2',
+      'fullNameValidationCharacters':
+          "Tumia herufi, nafasi, alama ya ' na kistari pekee",
+      'birthDateValidationRequired': 'Tarehe ya Kuzaliwa inahitajika',
+      'genderValidationRequired': 'Jinsia inahitajika',
+      'phoneValidationRequired': 'Namba ya Simu inahitajika',
+      'phoneValidationInvalid': 'Weka namba sahihi ya simu ya Tanzania',
+      'emailValidationInvalid': 'Weka barua pepe sahihi',
+      'heightValidationInvalid': 'Urefu lazima uwe namba',
+      'heightValidationRange': 'Urefu lazima uwe kati ya cm 50 na 250',
+      'weightValidationInvalid': 'Uzito lazima uwe namba',
+      'weightValidationRange': 'Uzito lazima uwe kati ya kg 10 na 300',
+      'bloodGroupValidationInvalid': 'Chagua kundi sahihi la damu',
       'doctorOptional': 'Jina la Daktari (Hiari)',
       'hospitalOptional': 'Hospitali / Kliniki Unayopendelea (Hiari)',
       'healthNotes': 'Maelezo ya Afya / Huduma ya Kwanza',
@@ -691,6 +719,20 @@ class AppStrings {
   String get heightOptional => _get('heightOptional');
   String get weightOptional => _get('weightOptional');
   String get bloodGroupOptional => _get('bloodGroupOptional');
+  String get fullNameValidationRequired => _get('fullNameValidationRequired');
+  String get fullNameValidationLength => _get('fullNameValidationLength');
+  String get fullNameValidationCharacters =>
+      _get('fullNameValidationCharacters');
+  String get birthDateValidationRequired => _get('birthDateValidationRequired');
+  String get genderValidationRequired => _get('genderValidationRequired');
+  String get phoneValidationRequired => _get('phoneValidationRequired');
+  String get phoneValidationInvalid => _get('phoneValidationInvalid');
+  String get emailValidationInvalid => _get('emailValidationInvalid');
+  String get heightValidationInvalid => _get('heightValidationInvalid');
+  String get heightValidationRange => _get('heightValidationRange');
+  String get weightValidationInvalid => _get('weightValidationInvalid');
+  String get weightValidationRange => _get('weightValidationRange');
+  String get bloodGroupValidationInvalid => _get('bloodGroupValidationInvalid');
   String get doctorOptional => _get('doctorOptional');
   String get hospitalOptional => _get('hospitalOptional');
   String get healthNotes => _get('healthNotes');

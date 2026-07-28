@@ -23,6 +23,19 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   String weight = "";
   String bloodGroup = "";
 
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController birthDateController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController heightController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
+  final TextEditingController bloodGroupController = TextEditingController();
+
+  static const List<String> genderOptions = ["Male", "Female", "Other"];
+  String? selectedGender;
+  bool _isEditing = false;
+
   @override
   void initState() {
     super.initState();
@@ -50,8 +63,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         height = savedProfile['height']?.toString() ?? "";
         weight = savedProfile['weight']?.toString() ?? "";
         bloodGroup = savedProfile['bloodGroup']?.toString() ?? "";
+        _syncEditingFields();
       });
     }
+  }
+
+  void _syncEditingFields() {
+    fullNameController.text = fullName;
+    birthDateController.text = birthDate;
+    phoneController.text = phone;
+    emailController.text = email;
+    addressController.text = address;
+    heightController.text = height;
+    weightController.text = weight;
+    bloodGroupController.text = bloodGroup;
+    selectedGender = genderOptions.contains(gender) ? gender : null;
   }
 
   void _showError(String message) {
@@ -86,221 +112,66 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     });
   }
 
-  void _showEditProfileDialog() {
-    final strings = MyApp.of(context)!.strings;
+  void _startEditing() {
+    _syncEditingFields();
+    setState(() {
+      _isEditing = true;
+    });
+  }
 
-    final fullNameController = TextEditingController(text: fullName);
-    final birthDateController = TextEditingController(text: birthDate);
-    final phoneController = TextEditingController(text: phone);
-    final emailController = TextEditingController(text: email);
-    final addressController = TextEditingController(text: address);
-    final heightController = TextEditingController(text: height);
-    final weightController = TextEditingController(text: weight);
-    final bloodGroupController = TextEditingController(text: bloodGroup);
-    final genderOptions = ["Male", "Female", "Other"];
-    String? selectedGender = genderOptions.contains(gender) ? gender : null;
+  Future<void> _saveChanges() async {
+    if (fullNameController.text.trim().isEmpty) {
+      _showError("Full Name is required");
+      return;
+    }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final dialogColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-        final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-        final fillColor = isDark
-            ? const Color(0xFF2A2A2A)
-            : const Color(0xFFF3F4F8);
-        final borderColor = isDark
-            ? const Color(0xFF383838)
-            : const Color(0xFFE2E5EE);
-        const primaryColor = Color(0xFF5B5CEB);
+    if (birthDateController.text.trim().isEmpty) {
+      _showError("Birth Date is required");
+      return;
+    }
 
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: dialogColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
-              ),
-              title: Text(
-                "Edit Profile",
-                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildEditTextField(
-                      strings.fullNameRequired,
-                      fullNameController,
-                      fillColor,
-                      borderColor,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditTextField(
-                      strings.birthDateRequired,
-                      birthDateController,
-                      fillColor,
-                      borderColor,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: selectedGender,
-                      dropdownColor: dialogColor,
-                      style: TextStyle(color: textColor),
-                      decoration: InputDecoration(
-                        hintText: strings.genderRequired,
-                        filled: true,
-                        fillColor: fillColor,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: borderColor),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: borderColor),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF5B5CEB),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                          value: "Male",
-                          child: Text(strings.male),
-                        ),
-                        DropdownMenuItem(
-                          value: "Female",
-                          child: Text(strings.female),
-                        ),
-                        DropdownMenuItem(
-                          value: "Other",
-                          child: Text(strings.other),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setDialogState(() {
-                          selectedGender = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditTextField(
-                      strings.phoneRequired,
-                      phoneController,
-                      fillColor,
-                      borderColor,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditTextField(
-                      strings.emailRequired,
-                      emailController,
-                      fillColor,
-                      borderColor,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditTextField(
-                      strings.addressOptional,
-                      addressController,
-                      fillColor,
-                      borderColor,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditTextField(
-                      strings.heightOptional,
-                      heightController,
-                      fillColor,
-                      borderColor,
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditTextField(
-                      strings.weightOptional,
-                      weightController,
-                      fillColor,
-                      borderColor,
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildEditTextField(
-                      strings.bloodGroupOptional,
-                      bloodGroupController,
-                      fillColor,
-                      borderColor,
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    strings.cancel,
-                    style: TextStyle(color: textColor.withOpacity(0.7)),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (fullNameController.text.trim().isEmpty) {
-                      _showError("Full Name is required");
-                      return;
-                    }
+    if (selectedGender == null) {
+      _showError("Gender is required");
+      return;
+    }
 
-                    if (birthDateController.text.trim().isEmpty) {
-                      _showError("Birth Date is required");
-                      return;
-                    }
+    if (phoneController.text.trim().isEmpty) {
+      _showError("Phone Number is required");
+      return;
+    }
 
-                    if (selectedGender == null) {
-                      _showError("Gender is required");
-                      return;
-                    }
+    final updatedProfile = {
+      'fullName': fullNameController.text.trim(),
+      'birthDate': birthDateController.text.trim(),
+      'gender': selectedGender ?? '',
+      'phone': phoneController.text.trim(),
+      'email': emailController.text.trim(),
+      'address': addressController.text.trim(),
+      'height': heightController.text.trim(),
+      'weight': weightController.text.trim(),
+      'bloodGroup': bloodGroupController.text.trim(),
+    };
 
-                    if (phoneController.text.trim().isEmpty) {
-                      _showError("Phone Number is required");
-                      return;
-                    }
+    await _saveProfileData(updatedProfile);
 
-                    final updatedProfile = {
-                      'fullName': fullNameController.text.trim(),
-                      'birthDate': birthDateController.text.trim(),
-                      'gender': selectedGender ?? '',
-                      'phone': phoneController.text.trim(),
-                      'email': emailController.text.trim(),
-                      'address': addressController.text.trim(),
-                      'height': heightController.text.trim(),
-                      'weight': weightController.text.trim(),
-                      'bloodGroup': bloodGroupController.text.trim(),
-                    };
+    if (!mounted) return;
 
-                    Navigator.pop(context);
-                    await _saveProfileData(updatedProfile);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    strings.update,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+    setState(() {
+      _isEditing = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    fullNameController.dispose();
+    birthDateController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    addressController.dispose();
+    heightController.dispose();
+    weightController.dispose();
+    bloodGroupController.dispose();
+    super.dispose();
   }
 
   @override
@@ -311,6 +182,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
     final titleColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final subColor = isDark ? const Color(0xFFB0B0B0) : const Color(0xFF666666);
+    final fillColor = isDark
+        ? const Color(0xFF2A2A2A)
+        : const Color(0xFFF3F4F8);
+    final borderColor = isDark
+        ? const Color(0xFF383838)
+        : const Color(0xFFE2E5EE);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -323,21 +200,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: _showEditProfileDialog,
-              icon: const Icon(Icons.edit, color: Colors.white),
-              label: const Text(
-                "Edit Profile",
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B5CEB),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           _infoCard(
             strings.fullName,
             fullName,
@@ -345,6 +207,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.fullNameRequired,
+              fullNameController,
+              fillColor,
+              borderColor,
+            ),
           ),
           _infoCard(
             strings.birthDate,
@@ -353,6 +221,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.birthDateRequired,
+              birthDateController,
+              fillColor,
+              borderColor,
+            ),
           ),
           _infoCard(
             strings.gender,
@@ -361,6 +235,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildGenderDropdown(
+              strings,
+              cardColor,
+              titleColor,
+              fillColor,
+              borderColor,
+            ),
           ),
           _infoCard(
             strings.phone,
@@ -369,6 +250,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.phoneRequired,
+              phoneController,
+              fillColor,
+              borderColor,
+              keyboardType: TextInputType.phone,
+            ),
           ),
           _infoCard(
             strings.email,
@@ -377,6 +265,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.emailRequired,
+              emailController,
+              fillColor,
+              borderColor,
+              keyboardType: TextInputType.emailAddress,
+            ),
           ),
           _infoCard(
             strings.address,
@@ -385,6 +280,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.addressOptional,
+              addressController,
+              fillColor,
+              borderColor,
+            ),
           ),
           _infoCard(
             strings.heightLabel,
@@ -393,6 +294,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.heightOptional,
+              heightController,
+              fillColor,
+              borderColor,
+              keyboardType: TextInputType.number,
+            ),
           ),
           _infoCard(
             strings.weightLabel,
@@ -401,6 +309,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.weightOptional,
+              weightController,
+              fillColor,
+              borderColor,
+              keyboardType: TextInputType.number,
+            ),
           ),
           _infoCard(
             strings.bloodGroup,
@@ -409,6 +324,25 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             titleColor,
             subColor,
             strings,
+            editor: _buildEditTextField(
+              strings.bloodGroupOptional,
+              bloodGroupController,
+              fillColor,
+              borderColor,
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: ElevatedButton(
+              onPressed: _isEditing ? _saveChanges : _startEditing,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5B5CEB),
+              ),
+              child: Text(
+                _isEditing ? "Save Changes" : "Edit Profile",
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
           ),
         ],
       ),
@@ -421,8 +355,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     Color cardColor,
     Color titleColor,
     Color subColor,
-    dynamic strings,
-  ) {
+    dynamic strings, {
+    Widget? editor,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(18),
@@ -442,12 +377,60 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            value.isEmpty ? strings.notProvidedYet : value,
-            style: TextStyle(fontSize: 14, color: subColor),
-          ),
+          if (_isEditing && editor != null)
+            editor
+          else
+            Text(
+              value.isEmpty ? strings.notProvidedYet : value,
+              style: TextStyle(fontSize: 14, color: subColor),
+            ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGenderDropdown(
+    dynamic strings,
+    Color dropdownColor,
+    Color textColor,
+    Color fillColor,
+    Color borderColor,
+  ) {
+    return DropdownButtonFormField<String>(
+      value: selectedGender,
+      dropdownColor: dropdownColor,
+      style: TextStyle(color: textColor),
+      decoration: InputDecoration(
+        hintText: strings.genderRequired,
+        filled: true,
+        fillColor: fillColor,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF5B5CEB), width: 1.5),
+        ),
+      ),
+      items: [
+        DropdownMenuItem(value: "Male", child: Text(strings.male)),
+        DropdownMenuItem(value: "Female", child: Text(strings.female)),
+        DropdownMenuItem(value: "Other", child: Text(strings.other)),
+      ],
+      onChanged: (value) {
+        setState(() {
+          selectedGender = value;
+        });
+      },
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:hive/hive.dart';
@@ -65,59 +67,72 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       builder: (context) {
         List<Contact> filteredContacts = List.from(contacts);
 
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text("Select Contact"),
-              content: SizedBox(
-                width: double.maxFinite,
-                height: 500,
-                child: Column(
-                  children: [
-                    TextField(
-                      decoration: const InputDecoration(
-                        hintText: "Search Contact",
-                        prefixIcon: Icon(Icons.search),
-                      ),
-                      onChanged: (value) {
-                        setDialogState(() {
-                          filteredContacts = contacts
-                              .where(
-                                (contact) => contact.displayName
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase()),
-                              )
-                              .toList();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: filteredContacts.length,
-                        itemBuilder: (context, index) {
-                          final contact = filteredContacts[index];
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: StatefulBuilder(
+            builder: (context, setDialogState) {
+              final mediaQuery = MediaQuery.of(context);
+              final availableHeight =
+                  mediaQuery.size.height - mediaQuery.viewInsets.bottom;
 
-                          return ListTile(
-                            leading: const CircleAvatar(
-                              child: Icon(Icons.person),
-                            ),
-                            title: Text(contact.displayName),
-                            subtitle: contact.phones.isNotEmpty
-                                ? Text(contact.phones.first.number)
-                                : null,
-                            onTap: () {
-                              Navigator.pop(context, contact);
-                            },
-                          );
+              return AlertDialog(
+                insetPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
+                titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                title: const Text("Select Contact"),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  height: availableHeight * 0.68,
+                  child: Column(
+                    children: [
+                      TextField(
+                        decoration: const InputDecoration(
+                          hintText: "Search Contact",
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                        onChanged: (value) {
+                          setDialogState(() {
+                            filteredContacts = contacts
+                                .where(
+                                  (contact) => contact.displayName
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()),
+                                )
+                                .toList();
+                          });
                         },
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: filteredContacts.length,
+                          itemBuilder: (context, index) {
+                            final contact = filteredContacts[index];
+
+                            return ListTile(
+                              leading: const CircleAvatar(
+                                child: Icon(Icons.person),
+                              ),
+                              title: Text(contact.displayName),
+                              subtitle: contact.phones.isNotEmpty
+                                  ? Text(contact.phones.first.number)
+                                  : null,
+                              onTap: () {
+                                Navigator.pop(context, contact);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );

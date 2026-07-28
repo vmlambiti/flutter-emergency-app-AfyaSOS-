@@ -88,124 +88,256 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTopBar(context, titleColor, subTitleColor, strings),
-              const SizedBox(height: 28),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 26,
-                ),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: _buildTopBar(context, titleColor, subTitleColor, strings),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
                 child: Column(
-                  children: [
-                    Text(
-                      strings.emergencyHelp,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: titleColor,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      strings.emergencyHelpDesc,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: subTitleColor,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    _buildSosButton(
-                      context: context,
-                      isDark: isDark,
-                      sosRed: sosRed,
-                      ringRed1: ringRed1,
-                      ringRed2: ringRed2,
-                      strings: strings,
-                    ),
-                    const SizedBox(height: 22),
-                    Text(
-                      strings.pressOnlyWhenNeeded,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: subTitleColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 26,
+                      ),
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(16),
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: Icon(
-                        Icons.location_on_rounded,
-                        color: primaryColor,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            strings.locationSharingReady,
+                            strings.emergencyHelp,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: titleColor,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 10),
                           Text(
-                            strings.locationSharingReadyDesc,
+                            strings.emergencyHelpDesc,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              color: subTitleColor,
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          _buildSosButton(
+                            context: context,
+                            isDark: isDark,
+                            sosRed: sosRed,
+                            ringRed1: ringRed1,
+                            ringRed2: ringRed2,
+                            strings: strings,
+                          ),
+                          const SizedBox(height: 22),
+                          Text(
+                            strings.pressOnlyWhenNeeded,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
                               color: subTitleColor,
-                              height: 1.4,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(
+                              Icons.location_on_rounded,
+                              color: primaryColor,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  strings.locationSharingReady,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: titleColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  strings.locationSharingReadyDesc,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: subTitleColor,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 26),
+
+                    Text(
+                      strings.quickActions,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: titleColor,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    GridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: 0.82,
+                      children: [
+                        _buildActionCard(
+                          title: strings.emergencyContacts,
+                          subtitle: strings.emergencyContactsDesc,
+                          icon: Icons.contacts_rounded,
+                          color: const Color(0xFF5B5CEB),
+                          cardColor: cardColor,
+                          titleColor: titleColor,
+                          subTitleColor: subTitleColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const EmergencyContactsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionCard(
+                          title: strings.healthInfo,
+                          subtitle: strings.healthInfoDesc,
+                          icon: Icons.favorite_rounded,
+                          color: const Color(0xFFE53935),
+                          cardColor: cardColor,
+                          titleColor: titleColor,
+                          subTitleColor: subTitleColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HealthInfoScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionCard(
+                          title: strings.firstAid,
+                          subtitle: strings.firstAidDesc,
+                          icon: Icons.medical_services_rounded,
+                          color: const Color(0xFFFF9800),
+                          cardColor: cardColor,
+                          titleColor: titleColor,
+                          subTitleColor: subTitleColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const FirstAidScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionCard(
+                          title: strings.settings,
+                          subtitle: strings.settingsDesc,
+                          icon: Icons.settings_rounded,
+                          color: const Color(0xFF00A86B),
+                          cardColor: cardColor,
+                          titleColor: titleColor,
+                          subTitleColor: subTitleColor,
+                          onTap: () {
+                            _openSettings(context);
+                          },
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 26),
+
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: primaryColor,
+                            size: 26,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              strings.homeTip,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: subTitleColor,
+                                height: 1.5,
+                              ),
                             ),
                           ),
                         ],
@@ -214,133 +346,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
-              const SizedBox(height: 26),
-
-              Text(
-                strings.quickActions,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: titleColor,
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 0.82,
-                children: [
-                  _buildActionCard(
-                    title: strings.emergencyContacts,
-                    subtitle: strings.emergencyContactsDesc,
-                    icon: Icons.contacts_rounded,
-                    color: const Color(0xFF5B5CEB),
-                    cardColor: cardColor,
-                    titleColor: titleColor,
-                    subTitleColor: subTitleColor,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const EmergencyContactsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildActionCard(
-                    title: strings.healthInfo,
-                    subtitle: strings.healthInfoDesc,
-                    icon: Icons.favorite_rounded,
-                    color: const Color(0xFFE53935),
-                    cardColor: cardColor,
-                    titleColor: titleColor,
-                    subTitleColor: subTitleColor,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const HealthInfoScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildActionCard(
-                    title: strings.firstAid,
-                    subtitle: strings.firstAidDesc,
-                    icon: Icons.medical_services_rounded,
-                    color: const Color(0xFFFF9800),
-                    cardColor: cardColor,
-                    titleColor: titleColor,
-                    subTitleColor: subTitleColor,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const FirstAidScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildActionCard(
-                    title: strings.settings,
-                    subtitle: strings.settingsDesc,
-                    icon: Icons.settings_rounded,
-                    color: const Color(0xFF00A86B),
-                    cardColor: cardColor,
-                    titleColor: titleColor,
-                    subTitleColor: subTitleColor,
-                    onTap: () {
-                      _openSettings(context);
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 26),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      color: primaryColor,
-                      size: 26,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        strings.homeTip,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: subTitleColor,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -361,10 +368,12 @@ class _HomeScreenState extends State<HomeScreen> {
             color: const Color(0xFF5B5CEB).withOpacity(0.12),
             borderRadius: BorderRadius.circular(18),
           ),
-          child: const Icon(
-            Icons.health_and_safety_rounded,
-            color: Color(0xFF5B5CEB),
-            size: 28,
+          child: Padding(
+            padding: const EdgeInsets.all(5),
+            child: Image.asset(
+              'assets/images/afyasos_icon.png',
+              fit: BoxFit.contain,
+            ),
           ),
         ),
         const SizedBox(width: 14),

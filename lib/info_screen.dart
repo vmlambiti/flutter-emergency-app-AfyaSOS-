@@ -215,7 +215,12 @@ class _InfoScreenState extends State<InfoScreen> {
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE53935),
+                                backgroundColor: const Color.fromARGB(
+                                  255,
+                                  53,
+                                  82,
+                                  229,
+                                ),
                                 foregroundColor: buttonTextColor,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -16,6 +18,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   int currentStep = 0;
 
   final PageController _pageController = PageController();
+  final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
+
+  static const List<String> _bloodGroups = [
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-',
+  ];
 
   static const String boxName = 'userBox';
   static const String profileKey = 'profile';
@@ -196,68 +210,81 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       builder: (context) {
         List<Contact> filteredContacts = List.from(contacts);
 
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text("Select Contact"),
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: StatefulBuilder(
+            builder: (context, setDialogState) {
+              final mediaQuery = MediaQuery.of(context);
+              final availableHeight =
+                  mediaQuery.size.height - mediaQuery.viewInsets.bottom;
 
-              content: SizedBox(
-                width: double.maxFinite,
-                height: 500,
+              return AlertDialog(
+                insetPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
+                titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                title: const Text("Select Contact"),
 
-                child: Column(
-                  children: [
-                    TextField(
-                      decoration: const InputDecoration(
-                        hintText: "Search Contact",
-                        prefixIcon: Icon(Icons.search),
-                      ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  height: availableHeight * 0.68,
 
-                      onChanged: (value) {
-                        setDialogState(() {
-                          filteredContacts = contacts
-                              .where(
-                                (contact) => contact.displayName
-                                    .toLowerCase()
-                                    .contains(value.toLowerCase()),
-                              )
-                              .toList();
-                        });
-                      },
-                    ),
+                  child: Column(
+                    children: [
+                      TextField(
+                        decoration: const InputDecoration(
+                          hintText: "Search Contact",
+                          prefixIcon: Icon(Icons.search),
+                        ),
 
-                    const SizedBox(height: 10),
-
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: filteredContacts.length,
-
-                        itemBuilder: (context, index) {
-                          final contact = filteredContacts[index];
-
-                          return ListTile(
-                            leading: const CircleAvatar(
-                              child: Icon(Icons.person),
-                            ),
-
-                            title: Text(contact.displayName),
-
-                            subtitle: contact.phones.isNotEmpty
-                                ? Text(contact.phones.first.number)
-                                : null,
-
-                            onTap: () {
-                              Navigator.pop(context, contact);
-                            },
-                          );
+                        onChanged: (value) {
+                          setDialogState(() {
+                            filteredContacts = contacts
+                                .where(
+                                  (contact) => contact.displayName
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()),
+                                )
+                                .toList();
+                          });
                         },
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 10),
+
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: filteredContacts.length,
+
+                          itemBuilder: (context, index) {
+                            final contact = filteredContacts[index];
+
+                            return ListTile(
+                              leading: const CircleAvatar(
+                                child: Icon(Icons.person),
+                              ),
+
+                              title: Text(contact.displayName),
+
+                              subtitle: contact.phones.isNotEmpty
+                                  ? Text(contact.phones.first.number)
+                                  : null,
+
+                              onTap: () {
+                                Navigator.pop(context, contact);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
@@ -296,23 +323,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   void nextStep() async {
     if (currentStep == 0) {
-      if (fullNameController.text.trim().isEmpty) {
-        _showError("Full Name is required");
-        return;
-      }
-
-      if (birthDateController.text.trim().isEmpty) {
-        _showError("Birth Date is required");
-        return;
-      }
-
-      if (selectedGender == null) {
-        _showError("Gender is required");
-        return;
-      }
-
-      if (phoneController.text.trim().isEmpty) {
-        _showError("Phone Number is required");
+      if (!(_profileFormKey.currentState?.validate() ?? false)) {
         return;
       }
     }
@@ -641,103 +652,129 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              strings.basicInformation,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: titleColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              strings.basicInfoDesc,
-              style: TextStyle(fontSize: 14, color: subTitleColor, height: 1.5),
-            ),
-            const SizedBox(height: 22),
-            _buildTextField(
-              strings.fullNameRequired,
-              fullNameController,
-              fieldFillColor,
-              borderColor,
-            ),
-            const SizedBox(height: 14),
-            _buildDateField(
-              context,
-              strings.birthDateRequired,
-              birthDateController,
-              fieldFillColor,
-              borderColor,
-            ),
-            const SizedBox(height: 14),
-            _buildGenderDropdown(
-              strings,
-              strings.genderRequired,
-              fieldFillColor,
-              borderColor,
-            ),
-            const SizedBox(height: 14),
-            _buildTextField(
-              strings.phoneRequired,
-              phoneController,
-              fieldFillColor,
-              borderColor,
-              keyboardType: TextInputType.phone,
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.contacts),
-                onPressed: _pickUserPhoneContact,
-              ),
-            ),
-            const SizedBox(height: 14),
-            _buildTextField(
-              strings.emailRequired,
-              emailController,
-              fieldFillColor,
-              borderColor,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 14),
-            _buildTextField(
-              strings.addressOptional,
-              addressController,
-              fieldFillColor,
-              borderColor,
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    strings.heightOptional,
-                    heightController,
-                    fieldFillColor,
-                    borderColor,
-                    keyboardType: TextInputType.number,
-                  ),
+        child: Form(
+          key: _profileFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                strings.basicInformation,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: titleColor,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    strings.weightOptional,
-                    weightController,
-                    fieldFillColor,
-                    borderColor,
-                    keyboardType: TextInputType.number,
-                  ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                strings.basicInfoDesc,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: subTitleColor,
+                  height: 1.5,
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            _buildTextField(
-              strings.bloodGroupOptional,
-              bloodGroupController,
-              fieldFillColor,
-              borderColor,
-            ),
-          ],
+              ),
+              const SizedBox(height: 22),
+              _buildTextField(
+                strings.fullNameRequired,
+                fullNameController,
+                fieldFillColor,
+                borderColor,
+                validator: (value) => _validateFullName(value, strings),
+              ),
+              const SizedBox(height: 14),
+              _buildDateField(
+                context,
+                strings.birthDateRequired,
+                birthDateController,
+                fieldFillColor,
+                borderColor,
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? strings.birthDateValidationRequired
+                    : null,
+              ),
+              const SizedBox(height: 14),
+              _buildGenderDropdown(
+                strings,
+                strings.genderRequired,
+                fieldFillColor,
+                borderColor,
+              ),
+              const SizedBox(height: 14),
+              _buildTextField(
+                strings.phoneRequired,
+                phoneController,
+                fieldFillColor,
+                borderColor,
+                keyboardType: TextInputType.phone,
+                validator: (value) => _validatePhone(value, strings),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.contacts),
+                  onPressed: _pickUserPhoneContact,
+                ),
+              ),
+              const SizedBox(height: 14),
+              _buildTextField(
+                strings.emailOptional,
+                emailController,
+                fieldFillColor,
+                borderColor,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) => _validateEmail(value, strings),
+              ),
+              const SizedBox(height: 14),
+              _buildTextField(
+                strings.addressOptional,
+                addressController,
+                fieldFillColor,
+                borderColor,
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      strings.heightOptional,
+                      heightController,
+                      fieldFillColor,
+                      borderColor,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (value) => _validateMeasurement(
+                        value,
+                        50,
+                        250,
+                        strings.heightValidationInvalid,
+                        strings.heightValidationRange,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTextField(
+                      strings.weightOptional,
+                      weightController,
+                      fieldFillColor,
+                      borderColor,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (value) => _validateMeasurement(
+                        value,
+                        10,
+                        300,
+                        strings.weightValidationInvalid,
+                        strings.weightValidationRange,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _buildBloodGroupDropdown(strings, fieldFillColor, borderColor),
+            ],
+          ),
         ),
       ),
     );
@@ -1026,11 +1063,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
     Widget? suffixIcon,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
+      validator: validator,
       decoration: InputDecoration(
         suffixIcon: suffixIcon,
         hintText: hint,
@@ -1061,11 +1100,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     String hint,
     TextEditingController controller,
     Color fillColor,
-    Color borderColor,
-  ) {
-    return TextField(
+    Color borderColor, {
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
       controller: controller,
       readOnly: true,
+      validator: validator,
       onTap: () async {
         DateTime? pickedDate = await showDatePicker(
           context: context,
@@ -1113,6 +1154,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   ) {
     return DropdownButtonFormField<String>(
       value: selectedGender,
+      validator: (value) =>
+          value == null ? strings.genderValidationRequired : null,
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
@@ -1145,5 +1188,98 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         });
       },
     );
+  }
+
+  Widget _buildBloodGroupDropdown(
+    AppStrings strings,
+    Color fillColor,
+    Color borderColor,
+  ) {
+    final savedValue = bloodGroupController.text.trim();
+    final selectedValue = _bloodGroups.contains(savedValue) ? savedValue : null;
+
+    return DropdownButtonFormField<String>(
+      value: selectedValue,
+      validator: (_) {
+        final value = bloodGroupController.text.trim();
+        return value.isNotEmpty && !_bloodGroups.contains(value)
+            ? strings.bloodGroupValidationInvalid
+            : null;
+      },
+      decoration: InputDecoration(
+        hintText: strings.bloodGroupOptional,
+        filled: true,
+        fillColor: fillColor,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF5B5CEB), width: 1.5),
+        ),
+      ),
+      items: _bloodGroups
+          .map((group) => DropdownMenuItem(value: group, child: Text(group)))
+          .toList(),
+      onChanged: (value) {
+        bloodGroupController.text = value ?? '';
+      },
+    );
+  }
+
+  String? _validateFullName(String? value, AppStrings strings) {
+    final name = value?.trim() ?? '';
+    if (name.isEmpty) return strings.fullNameValidationRequired;
+    if (name.length < 2) return strings.fullNameValidationLength;
+    if (!RegExp(r"^[A-Za-z]+(?:[ '-][A-Za-z]+)*$").hasMatch(name)) {
+      return strings.fullNameValidationCharacters;
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value, AppStrings strings) {
+    final phone = value?.trim() ?? '';
+    if (phone.isEmpty) return strings.phoneValidationRequired;
+    if (!RegExp(r'^(?:0[67]\d{8}|\+255[67]\d{7})$').hasMatch(phone)) {
+      return strings.phoneValidationInvalid;
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value, AppStrings strings) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return null;
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      return strings.emailValidationInvalid;
+    }
+    return null;
+  }
+
+  String? _validateMeasurement(
+    String? value,
+    double minimum,
+    double maximum,
+    String invalidMessage,
+    String rangeMessage,
+  ) {
+    final input = value?.trim() ?? '';
+    if (input.isEmpty) return null;
+    if (!RegExp(r'^\d+(?:\.\d+)?$').hasMatch(input)) {
+      return invalidMessage;
+    }
+    final measurement = double.tryParse(input);
+    if (measurement == null || measurement < minimum || measurement > maximum) {
+      return rangeMessage;
+    }
+    return null;
   }
 }

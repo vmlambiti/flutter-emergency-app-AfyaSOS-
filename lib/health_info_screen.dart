@@ -45,6 +45,14 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
   String preferredHospital = "";
   String healthNotes = "";
 
+  final TextEditingController conditionController = TextEditingController();
+  final TextEditingController allergyController = TextEditingController();
+  final TextEditingController medicationController = TextEditingController();
+  final TextEditingController doctorController = TextEditingController();
+  final TextEditingController hospitalController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
+  bool _isEditingHealthInfo = false;
+
   String connectionStatus = "";
   String heartRate = "";
   String spo2 = "";
@@ -74,6 +82,12 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
     _bluetoothService.removeListener(_updateBluetoothConnectionStatus);
     _sensorReadingSubscription?.cancel();
     _pageController.dispose();
+    conditionController.dispose();
+    allergyController.dispose();
+    medicationController.dispose();
+    doctorController.dispose();
+    hospitalController.dispose();
+    notesController.dispose();
     super.dispose();
   }
 
@@ -152,8 +166,18 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
         doctorName = data['doctor']?.toString() ?? "";
         preferredHospital = data['hospital']?.toString() ?? "";
         healthNotes = data['healthNotes']?.toString() ?? "";
+        _syncHealthInfoControllers();
       });
     }
+  }
+
+  void _syncHealthInfoControllers() {
+    conditionController.text = medicalConditions;
+    allergyController.text = allergies;
+    medicationController.text = medications;
+    doctorController.text = doctorName;
+    hospitalController.text = preferredHospital;
+    notesController.text = healthNotes;
   }
 
   Future<void> _loadRecentReadings() async {
@@ -211,9 +235,10 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
     };
 
     setState(() {
-      recentReadings = [savedReading, ...recentReadings]
-          .take(maxStoredReadings)
-          .toList();
+      recentReadings = [
+        savedReading,
+        ...recentReadings,
+      ].take(maxStoredReadings).toList();
     });
 
     final readingsSnapshot = List<Map<String, dynamic>>.from(recentReadings);
@@ -246,129 +271,30 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
     await box.put(readingsKey, readings);
   }
 
-  void _showEditHealthDialog() {
-    final strings = MyApp.of(context)!.strings;
+  void _startEditingHealthInfo() {
+    _syncHealthInfoControllers();
+    setState(() {
+      _isEditingHealthInfo = true;
+    });
+  }
 
-    final conditionController = TextEditingController(text: medicalConditions);
-    final allergyController = TextEditingController(text: allergies);
-    final medicationController = TextEditingController(text: medications);
-    final doctorController = TextEditingController(text: doctorName);
-    final hospitalController = TextEditingController(text: preferredHospital);
-    final notesController = TextEditingController(text: healthNotes);
+  Future<void> _saveInlineHealthInfo() async {
+    setState(() {
+      medicalConditions = conditionController.text.trim();
+      allergies = allergyController.text.trim();
+      medications = medicationController.text.trim();
+      doctorName = doctorController.text.trim();
+      preferredHospital = hospitalController.text.trim();
+      healthNotes = notesController.text.trim();
+    });
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final dialogColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-        final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
-        final fillColor = isDark
-            ? const Color(0xFF2A2A2A)
-            : const Color(0xFFF3F4F8);
-        final borderColor = isDark
-            ? const Color(0xFF383838)
-            : const Color(0xFFE2E5EE);
-        final primaryColor = const Color(0xFF5B5CEB);
+    await _saveHealthInfo();
 
-        return AlertDialog(
-          backgroundColor: dialogColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
-          title: Text(
-            strings.editHealthInfo,
-            style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildTextField(
-                  strings.medicalConditions,
-                  conditionController,
-                  fillColor,
-                  borderColor,
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  strings.allergies,
-                  allergyController,
-                  fillColor,
-                  borderColor,
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  strings.medications,
-                  medicationController,
-                  fillColor,
-                  borderColor,
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  strings.doctorName,
-                  doctorController,
-                  fillColor,
-                  borderColor,
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  strings.preferredHospitalClinic,
-                  hospitalController,
-                  fillColor,
-                  borderColor,
-                ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  strings.healthNotes,
-                  notesController,
-                  fillColor,
-                  borderColor,
-                  maxLines: 4,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                strings.cancel,
-                style: TextStyle(color: textColor.withOpacity(0.7)),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                setState(() {
-                  medicalConditions = conditionController.text.trim();
-                  allergies = allergyController.text.trim();
-                  medications = medicationController.text.trim();
-                  doctorName = doctorController.text.trim();
-                  preferredHospital = hospitalController.text.trim();
-                  healthNotes = notesController.text.trim();
-                });
+    if (!mounted) return;
 
-                await _saveHealthInfo();
-
-                if (!mounted) return;
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                strings.update,
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    setState(() {
+      _isEditingHealthInfo = false;
+    });
   }
 
   void _nextPage() {
@@ -486,6 +412,14 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
     Color subColor,
     dynamic strings,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillColor = isDark
+        ? const Color(0xFF2A2A2A)
+        : const Color(0xFFF3F4F8);
+    final borderColor = isDark
+        ? const Color(0xFF383838)
+        : const Color(0xFFE2E5EE);
+
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -493,28 +427,19 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
           Expanded(
             child: ListView(
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton.icon(
-                    onPressed: _showEditHealthDialog,
-                    icon: const Icon(Icons.edit, color: Colors.white),
-                    label: Text(
-                      strings.editHealthInformation,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5B5CEB),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
                 _item(
                   cardColor,
                   titleColor,
                   subColor,
                   strings.medicalConditions,
                   medicalConditions,
+                  editor: _buildTextField(
+                    strings.medicalConditions,
+                    conditionController,
+                    fillColor,
+                    borderColor,
+                    maxLines: 2,
+                  ),
                 ),
                 _item(
                   cardColor,
@@ -522,6 +447,13 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
                   subColor,
                   strings.allergies,
                   allergies,
+                  editor: _buildTextField(
+                    strings.allergies,
+                    allergyController,
+                    fillColor,
+                    borderColor,
+                    maxLines: 2,
+                  ),
                 ),
                 _item(
                   cardColor,
@@ -529,6 +461,13 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
                   subColor,
                   strings.medications,
                   medications,
+                  editor: _buildTextField(
+                    strings.medications,
+                    medicationController,
+                    fillColor,
+                    borderColor,
+                    maxLines: 2,
+                  ),
                 ),
                 _item(
                   cardColor,
@@ -536,6 +475,12 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
                   subColor,
                   strings.doctorName,
                   doctorName,
+                  editor: _buildTextField(
+                    strings.doctorName,
+                    doctorController,
+                    fillColor,
+                    borderColor,
+                  ),
                 ),
                 _item(
                   cardColor,
@@ -543,6 +488,12 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
                   subColor,
                   strings.preferredHospitalClinic,
                   preferredHospital,
+                  editor: _buildTextField(
+                    strings.preferredHospitalClinic,
+                    hospitalController,
+                    fillColor,
+                    borderColor,
+                  ),
                 ),
                 _item(
                   cardColor,
@@ -550,6 +501,30 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
                   subColor,
                   strings.healthNotes,
                   healthNotes,
+                  editor: _buildTextField(
+                    strings.healthNotes,
+                    notesController,
+                    fillColor,
+                    borderColor,
+                    maxLines: 4,
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: _isEditingHealthInfo
+                        ? _saveInlineHealthInfo
+                        : _startEditingHealthInfo,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5B5CEB),
+                    ),
+                    child: Text(
+                      _isEditingHealthInfo
+                          ? "Save Changes"
+                          : strings.editHealthInformation,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -660,8 +635,9 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
     Color titleColor,
     Color subColor,
     String title,
-    String value,
-  ) {
+    String value, {
+    Widget? editor,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -677,10 +653,13 @@ class _HealthInfoScreenState extends State<HealthInfoScreen> {
             style: TextStyle(color: titleColor, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
-          Text(
-            value.isEmpty ? "Not provided yet" : value,
-            style: TextStyle(color: subColor),
-          ),
+          if (_isEditingHealthInfo && editor != null)
+            editor
+          else
+            Text(
+              value.isEmpty ? "Not provided yet" : value,
+              style: TextStyle(color: subColor),
+            ),
         ],
       ),
     );

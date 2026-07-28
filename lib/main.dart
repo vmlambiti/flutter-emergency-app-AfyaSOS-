@@ -148,6 +148,18 @@ class _MyAppState extends State<MyApp> implements AppController {
             elevation: 0,
           ),
         ),
+        builder: (context, child) {
+          return ColoredBox(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: SafeArea(
+              top: false,
+              left: false,
+              right: false,
+              bottom: true,
+              child: child ?? const SizedBox.shrink(),
+            ),
+          );
+        },
         home: const WelcomeScreen(),
       ),
     );
