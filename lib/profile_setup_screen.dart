@@ -31,6 +31,31 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     'O-',
   ];
 
+  static const List<String> _hypertensionMedications = [
+    'Amlodipine',
+    'Nifedipine',
+    'Enalapril',
+    'Lisinopril',
+    'Losartan',
+    'Hydrochlorothiazide',
+    'Atenolol',
+    'Other / Not listed',
+  ];
+
+  static const List<String> _tanzaniaHospitals = [
+    'Muhimbili National Hospital (MNH)',
+    'Jakaya Kikwete Cardiac Institute (JKCI)',
+    'Aga Khan Hospital Dar es Salaam',
+    'Benjamin Mkapa Hospital',
+    'Kilimanjaro Christian Medical Centre (KCMC)',
+    'Bugando Medical Centre',
+    'Tumbi Regional Referral Hospital',
+    'Amana Regional Referral Hospital',
+    'Temeke Regional Referral Hospital',
+    'Mwananyamala Regional Referral Hospital',
+    'Other / Not listed',
+  ];
+
   static const String boxName = 'userBox';
   static const String profileKey = 'profile';
   static const String healthKey = 'health_info';
@@ -55,6 +80,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final TextEditingController doctorController = TextEditingController();
   final TextEditingController hospitalController = TextEditingController();
   final TextEditingController healthNotesController = TextEditingController();
+  TextEditingController? _openHealthDropdownController;
 
   // Step 3 - Emergency Contacts
   final List<Map<String, TextEditingController>> emergencyContacts = [];
@@ -836,12 +862,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               maxLines: 2,
             ),
             const SizedBox(height: 14),
-            _buildTextField(
+            _buildHealthDropdown(
               strings.medications,
               medicationController,
               fieldFillColor,
               borderColor,
-              maxLines: 2,
+              _hypertensionMedications,
             ),
             const SizedBox(height: 14),
             _buildTextField(
@@ -851,11 +877,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               borderColor,
             ),
             const SizedBox(height: 14),
-            _buildTextField(
+            _buildHealthDropdown(
               strings.hospitalOptional,
               hospitalController,
               fieldFillColor,
               borderColor,
+              _tanzaniaHospitals,
             ),
             const SizedBox(height: 14),
             _buildTextField(
@@ -1092,6 +1119,108 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           borderSide: const BorderSide(color: Color(0xFF5B5CEB), width: 1.5),
         ),
       ),
+    );
+  }
+
+  Widget _buildHealthDropdown(
+    String hint,
+    TextEditingController controller,
+    Color fillColor,
+    Color borderColor,
+    List<String> options,
+  ) {
+    final savedValue = controller.text.trim();
+    final dropdownOptions = List<String>.from(options);
+    if (savedValue.isNotEmpty && !dropdownOptions.contains(savedValue)) {
+      dropdownOptions.add(savedValue);
+    }
+    final isOpen = identical(_openHealthDropdownController, controller);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            setState(() {
+              _openHealthDropdownController = isOpen ? null : controller;
+            });
+          },
+          child: InputDecorator(
+            isFocused: isOpen,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: fillColor,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: Color(0xFF5B5CEB),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    savedValue.isEmpty ? hint : savedValue,
+                    style: savedValue.isEmpty
+                        ? TextStyle(color: Theme.of(context).hintColor)
+                        : null,
+                  ),
+                ),
+                Icon(isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+              ],
+            ),
+          ),
+        ),
+        if (isOpen) ...[
+          const SizedBox(height: 4),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 240),
+            decoration: BoxDecoration(
+              color: fillColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor),
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              itemCount: dropdownOptions.length,
+              itemBuilder: (context, index) {
+                final option = dropdownOptions[index];
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      controller.text = option;
+                      _openHealthDropdownController = null;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    child: Text(option),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ],
     );
   }
 
